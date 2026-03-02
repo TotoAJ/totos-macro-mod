@@ -37,14 +37,12 @@ public class KeyInputHandler {
             KeyMapping attackKey = client.options.keyAttack;
             boolean attacking = attackKey.isDown();
 
-            // Toggle macro
             if (maceToggleKey.consumeClick()) {
                 autoMace = !autoMace;
                 client.player.displayClientMessage(
                         Component.literal("Auto Mace: " + autoMace), true);
             }
 
-            // Rising edge: click JUST pressed
             if (autoMace && attacking && !wasAttacking) {
                 if (client.crosshairPickEntity != null) {
 
@@ -69,7 +67,6 @@ public class KeyInputHandler {
                 }
             }
 
-            // Next tick restore
             if (justMaced && wasAttacking && !attacking) {
                 client.player.getInventory().setSelectedSlot(previousSlot);
                 justMaced = false;
