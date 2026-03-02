@@ -53,7 +53,7 @@ public class KeyInputHandler {
                     int densitySlot = Integer.parseInt(
                             densityMaceKey.saveString().split("\\.")[2]) - 1;
 
-                    if (client.player.fallDistance < 12.5) { // It needs adequate fall ddamage
+                    if (client.player.fallDistance < 12.5) {
                         if (breachSlot >= 0 && breachSlot <= 8) {
                             client.player.getInventory().setSelectedSlot(breachSlot);
                             justMaced = true;
