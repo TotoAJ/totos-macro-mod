@@ -23,7 +23,7 @@ public class KeyInputHandler {
     private static KeyMapping breachMaceKey;
     private static KeyMapping densityMaceKey;
 
-    private static TimingState state = TimingState.IDLE;
+    private static TimingState maceState = TimingState.IDLE;
 
     private static boolean autoMace = true;
 
@@ -42,7 +42,7 @@ public class KeyInputHandler {
                         Component.literal("Auto Mace: " + autoMace), true);
             }
 
-            if (autoMace && state == TimingState.IDLE) {
+            if (autoMace && attackKey.isDown() && maceState == TimingState.IDLE) {
                 if (client.crosshairPickEntity != null) {
 
                     previousSlot = client.player.getInventory().getSelectedSlot();
@@ -55,25 +55,25 @@ public class KeyInputHandler {
                     if (client.player.fallDistance < 4.85) {
                         if (breachSlot >= 0 && breachSlot <= 8) {
                             client.player.getInventory().setSelectedSlot(breachSlot);
-                            state = TimingState.SWING;
+                            maceState = TimingState.SWING;
                         }
                     } else {
                         if (densitySlot >= 0 && densitySlot <= 8) {
                             client.player.getInventory().setSelectedSlot(densitySlot);
-                            state = TimingState.SWING;
+                            maceState = TimingState.SWING;
                         }
                     }
                 }
             }
 
-            if (state == TimingState.SWING) {
+            if (maceState == TimingState.SWING) {
                 client.player.getInventory().setSelectedSlot(previousSlot);
-                state = TimingState.RESET;
+                maceState = TimingState.RESET;
             }
 
-            if (state == TimingState.RESET) {
+            if (maceState == TimingState.RESET) {
                 if (!attackKey.isDown()) {
-                    state = TimingState.IDLE;
+                    maceState = TimingState.IDLE;
                 }
             }
         });
