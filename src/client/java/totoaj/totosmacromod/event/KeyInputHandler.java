@@ -23,9 +23,9 @@ public class KeyInputHandler {
     private static KeyMapping breachMaceKey;
     private static KeyMapping densityMaceKey;
 
+    private static TimingState state = TimingState.IDLE;
+
     private static boolean autoMace = true;
-    private static boolean justMaced = false;
-    private static boolean wasAttacking = false;
 
     private static int previousSlot;
 
@@ -35,7 +35,6 @@ public class KeyInputHandler {
                 return;
 
             KeyMapping attackKey = client.options.keyAttack;
-            boolean attacking = attackKey.isDown();
 
             if (maceToggleKey.consumeClick()) {
                 autoMace = !autoMace;
@@ -43,7 +42,7 @@ public class KeyInputHandler {
                         Component.literal("Auto Mace: " + autoMace), true);
             }
 
-            if (autoMace && attacking && !wasAttacking) {
+            if (autoMace && state == TimingState.IDLE) {
                 if (client.crosshairPickEntity != null) {
 
                     previousSlot = client.player.getInventory().getSelectedSlot();
@@ -56,23 +55,27 @@ public class KeyInputHandler {
                     if (client.player.fallDistance < 4.85) {
                         if (breachSlot >= 0 && breachSlot <= 8) {
                             client.player.getInventory().setSelectedSlot(breachSlot);
-                            justMaced = true;
+                            state = TimingState.SWING;
                         }
                     } else {
                         if (densitySlot >= 0 && densitySlot <= 8) {
                             client.player.getInventory().setSelectedSlot(densitySlot);
-                            justMaced = true;
+                            state = TimingState.SWING;
                         }
                     }
                 }
             }
 
-            if (justMaced && wasAttacking && !attacking) {
+            if (state == TimingState.SWING) {
                 client.player.getInventory().setSelectedSlot(previousSlot);
-                justMaced = false;
+                state = TimingState.RESET;
             }
 
-            wasAttacking = attacking;
+            if (state == TimingState.RESET) {
+                if (!attackKey.isDown()) {
+                    state = TimingState.IDLE;
+                }
+            }
         });
     }
 
