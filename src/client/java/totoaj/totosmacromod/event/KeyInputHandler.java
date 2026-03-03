@@ -27,6 +27,7 @@ public class KeyInputHandler {
 
     private static boolean autoMace = true;
 
+    private static int swingTimer = 0;
     private static int previousSlot;
 
     public static void registerKeyInputs() {
@@ -52,29 +53,32 @@ public class KeyInputHandler {
                     int densitySlot = Integer.parseInt(
                             densityMaceKey.saveString().split("\\.")[2]) - 1;
 
-                    if (client.player.fallDistance < 4.85) {
+                    if (client.player.fallDistance < 6.5) {
                         if (breachSlot >= 0 && breachSlot <= 8) {
                             client.player.getInventory().setSelectedSlot(breachSlot);
                             maceState = TimingState.SWING;
+                            swingTimer = 0;
                         }
                     } else {
                         if (densitySlot >= 0 && densitySlot <= 8) {
                             client.player.getInventory().setSelectedSlot(densitySlot);
                             maceState = TimingState.SWING;
+                            swingTimer = 0;
                         }
                     }
                 }
             }
 
-            if (maceState == TimingState.SWING) {
-                client.player.getInventory().setSelectedSlot(previousSlot);
-                maceState = TimingState.RESET;
+            if (maceState == TimingState.SWING && attackKey.isDown()) {
+                if (swingTimer >= 1) {
+                    client.player.getInventory().setSelectedSlot(previousSlot);
+                    maceState = TimingState.RESET;
+                }
+                swingTimer++;
             }
 
-            if (maceState == TimingState.RESET) {
-                if (!attackKey.isDown()) {
-                    maceState = TimingState.IDLE;
-                }
+            if (maceState == TimingState.RESET && !attackKey.isDown()) {
+                maceState = TimingState.IDLE;
             }
         });
     }
