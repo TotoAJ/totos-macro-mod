@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import totoaj.totosmacromod.TotosMacroMod;
+import totoaj.totosmacromod.event.TimingState.State;
 
 public class KeyInputHandler {
     private static final KeyMapping.Category MACRO_CATEGORY = KeyMapping.Category
@@ -27,8 +28,8 @@ public class KeyInputHandler {
     private static KeyMapping breachMaceKey;
     private static KeyMapping densityMaceKey;
 
-    private static TimingState maceState = TimingState.IDLE;
-    private static TimingState launchState = TimingState.IDLE;
+    private static TimingState maceState = new TimingState();
+    private static TimingState launchState = new TimingState();
 
     private static ItemStack pearlReference = new ItemStack(Items.ENDER_PEARL);
     private static ItemStack chargeReference = new ItemStack(Items.WIND_CHARGE);
@@ -56,7 +57,7 @@ public class KeyInputHandler {
             }
 
             if (autoMace) {
-                if (attackKey.isDown() && maceState == TimingState.IDLE) {
+                if (attackKey.isDown() && maceState.equals(State.IDLE)) {
                     if (client.crosshairPickEntity != null) {
 
                         previousSlot = client.player.getInventory().getSelectedSlot();
@@ -70,33 +71,33 @@ public class KeyInputHandler {
                         if (client.player.fallDistance < 6.5) {
                             if (breachSlot >= 0 && breachSlot <= 8) {
                                 client.player.getInventory().setSelectedSlot(breachSlot);
-                                maceState = TimingState.USING;
+                                maceState.next();
                                 swingTimer = 0;
                             }
                         } else {
                             if (densitySlot >= 0 && densitySlot <= 8) {
                                 client.player.getInventory().setSelectedSlot(densitySlot);
-                                maceState = TimingState.USING;
+                                maceState.next();
                                 swingTimer = 0;
                             }
                         }
                     }
                 }
 
-                if (attackKey.isDown() && maceState == TimingState.USING) {
+                if (attackKey.isDown() && maceState.equals(State.USING)) {
                     if (swingTimer >= 1) {
                         client.player.getInventory().setSelectedSlot(previousSlot);
-                        maceState = TimingState.RESET;
+                        maceState.next();
                     }
                     swingTimer++;
                 }
 
-                if (!attackKey.isDown() && maceState == TimingState.RESET) {
-                    maceState = TimingState.IDLE;
+                if (!attackKey.isDown() && maceState.equals(State.RESET)) {
+                    maceState.next();
                 }
             }
 
-            if (pearlLaunchKey.consumeClick() && launchState == TimingState.IDLE) {
+            if (pearlLaunchKey.consumeClick() && launchState.equals(State.IDLE)) {
 
                 int pearlSlot = client.player.getInventory().findSlotMatchingItem(pearlReference);
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
@@ -110,22 +111,22 @@ public class KeyInputHandler {
 
                     client.gameMode.useItem(client.player, client.player.swingingArm);
 
-                    launchState = TimingState.USING;
+                    launchState.next();
                 }
-            } else if (launchState == TimingState.USING) {
+            } else if (launchState.equals(State.USING)) {
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
 
                 client.player.getInventory().setSelectedSlot(windChargeSlot);
 
                 client.gameMode.useItem(client.player, client.player.swingingArm);
 
-                launchState = TimingState.RESET;
+                launchState.next();
                 launchTimer = 0;
-            } else if (launchState == TimingState.RESET) {
+            } else if (launchState.equals(State.RESET)) {
                 if (launchTimer >= 5) {
                     client.player.getInventory().setSelectedSlot(previousSlot);
 
-                    launchState = TimingState.IDLE;
+                    launchState.next();
                 }
 
                 launchTimer++;
