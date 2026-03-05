@@ -8,9 +8,11 @@ public class TimingState {
     }
 
     private State state;
+    private int tickTimer;
 
     public TimingState() {
         state = State.IDLE;
+        tickTimer = 0;
     }
 
     public void next() {
@@ -37,7 +39,19 @@ public class TimingState {
         state = s;
     }
 
-    public State get() {
+    public void tick() {
+        tickTimer++;
+    }
+
+    public void resetTimer() {
+        tickTimer = 0;
+    }
+
+    public int getTime() {
+        return tickTimer;
+    }
+
+    public State getState() {
         return state;
     }
 

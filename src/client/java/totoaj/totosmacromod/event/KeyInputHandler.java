@@ -39,8 +39,6 @@ public class KeyInputHandler {
     private static boolean autoMace = true;
     private static boolean autoLaunch = true;
 
-    private static int swingTimer = 0;
-    private static int launchTimer = 0;
     private static int previousSlot;
 
     public static void registerKeyInputs() {
@@ -75,24 +73,24 @@ public class KeyInputHandler {
                             if (breachSlot >= 0 && breachSlot <= 8) {
                                 client.player.getInventory().setSelectedSlot(breachSlot);
                                 maceState.next();
-                                swingTimer = 0;
+                                maceState.resetTimer();
                             }
                         } else {
                             if (densitySlot >= 0 && densitySlot <= 8) {
                                 client.player.getInventory().setSelectedSlot(densitySlot);
                                 maceState.next();
-                                swingTimer = 0;
+                                maceState.resetTimer();
                             }
                         }
                     }
                 }
 
                 if (attackKey.isDown() && maceState.equals(State.USING)) {
-                    if (swingTimer >= 1) {
+                    if (maceState.getTime() >= 1) {
                         client.player.getInventory().setSelectedSlot(previousSlot);
                         maceState.next();
                     }
-                    swingTimer++;
+                    maceState.tick();
                 }
 
                 if (!attackKey.isDown() && maceState.equals(State.RESET)) {
@@ -129,15 +127,15 @@ public class KeyInputHandler {
                 client.gameMode.useItem(client.player, client.player.swingingArm);
 
                 launchState.next();
-                launchTimer = 0;
+                launchState.resetTimer();
             } else if (!pearlLaunchKey.isDown() && launchState.equals(State.RESET)) {
-                if (launchTimer >= 5) {
+                if (launchState.getTime() >= 5) {
                     client.player.getInventory().setSelectedSlot(previousSlot);
 
                     launchState.next();
                 }
 
-                launchTimer++;
+                launchState.tick();
             }
         });
     }
