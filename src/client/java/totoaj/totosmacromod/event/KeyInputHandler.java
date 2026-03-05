@@ -1,5 +1,7 @@
 package totoaj.totosmacromod.event;
 
+import javax.swing.text.Keymap;
+
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -19,11 +21,13 @@ public class KeyInputHandler {
             .register(ResourceLocation.fromNamespaceAndPath(TotosMacroMod.MOD_ID,
                     "macros"));
     private static final String KEY_TOGGLE_MACE = "key." + TotosMacroMod.MOD_ID + ".toggle_mace";
+    private static final String KEY_TOGGLE_LAUNCH = "key." + TotosMacroMod.MOD_ID + ".toggle_launch";
     private static final String KEY_PEARL_LAUNCH = "key." + TotosMacroMod.MOD_ID + ".pearl_launch";
     private static final String KEY_DENSITY_MACE = "key." + TotosMacroMod.MOD_ID + ".density_mace";
     private static final String KEY_BREACH_MACE = "key." + TotosMacroMod.MOD_ID + ".breach_mace";
 
     private static KeyMapping maceToggleKey;
+    private static KeyMapping launchToggleKey;
     private static KeyMapping pearlLaunchKey;
     private static KeyMapping breachMaceKey;
     private static KeyMapping densityMaceKey;
@@ -35,6 +39,7 @@ public class KeyInputHandler {
     private static ItemStack chargeReference = new ItemStack(Items.WIND_CHARGE);
 
     private static boolean autoMace = true;
+    private static boolean autoLaunch = true;
 
     private static int swingTimer = 0;
     private static int launchTimer = 0;
@@ -97,15 +102,20 @@ public class KeyInputHandler {
                 }
             }
 
-            if (pearlLaunchKey.consumeClick() && launchState.equals(State.IDLE)) {
+            if (launchToggleKey.consumeClick()) {
+                autoLaunch = !autoLaunch;
+                client.player.displayClientMessage(
+                        Component.literal("Auto Pearl Launch: " + autoLaunch), true);
+            }
 
+            if (autoLaunch && pearlLaunchKey.isDown() && launchState.equals(State.IDLE)) {
                 int pearlSlot = client.player.getInventory().findSlotMatchingItem(pearlReference);
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
 
                 previousSlot = client.player.getInventory().getSelectedSlot();
 
                 if (pearlSlot > -1 && pearlSlot < 9 && windChargeSlot > -1 && windChargeSlot < 9) {
-                    client.player.forceSetRotation(client.player.getXRot(), false, -90.0f, false);
+                    client.player.forceSetRotation(0.0f, true, -90.0f, false);
 
                     client.player.getInventory().setSelectedSlot(pearlSlot);
 
@@ -113,7 +123,7 @@ public class KeyInputHandler {
 
                     launchState.next();
                 }
-            } else if (launchState.equals(State.USING)) {
+            } else if (pearlLaunchKey.isDown() && launchState.equals(State.USING)) {
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
 
                 client.player.getInventory().setSelectedSlot(windChargeSlot);
@@ -122,7 +132,7 @@ public class KeyInputHandler {
 
                 launchState.next();
                 launchTimer = 0;
-            } else if (launchState.equals(State.RESET)) {
+            } else if (!pearlLaunchKey.isDown() && launchState.equals(State.RESET)) {
                 if (launchTimer >= 5) {
                     client.player.getInventory().setSelectedSlot(previousSlot);
 
@@ -139,6 +149,12 @@ public class KeyInputHandler {
                 KEY_TOGGLE_MACE,
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_BACKSLASH,
+                MACRO_CATEGORY));
+
+        launchToggleKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                KEY_TOGGLE_LAUNCH,
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_BRACKET,
                 MACRO_CATEGORY));
 
         pearlLaunchKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
