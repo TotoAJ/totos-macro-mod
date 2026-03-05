@@ -1,7 +1,5 @@
 package totoaj.totosmacromod.event;
 
-import javax.swing.text.Keymap;
-
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
