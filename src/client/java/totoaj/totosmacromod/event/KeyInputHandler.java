@@ -1,26 +1,15 @@
 package totoaj.totosmacromod.event;
 
-import org.apache.logging.log4j.Level;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import net.fabricmc.fabric.mixin.item.client.ClientPlayerInteractionManagerMixin;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
-import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Interaction;
 import net.minecraft.world.item.ItemStack;
 import totoaj.totosmacromod.TotosMacroMod;
 
