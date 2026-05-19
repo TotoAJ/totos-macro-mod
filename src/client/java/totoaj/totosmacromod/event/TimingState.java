@@ -51,15 +51,7 @@ public class TimingState {
         return state;
     }
 
-    public boolean equals(Object o) {
-        if (o instanceof TimingState) {
-            TimingState other = (TimingState) o;
-
-            if (tickTimer == other.tickTimer && state == other.state) {
-                return true;
-            }
-        }
-
-        return false;
+    public boolean equals(TimingState other) {
+        return tickTimer == other.tickTimer && state == other.state;
     }
 }
