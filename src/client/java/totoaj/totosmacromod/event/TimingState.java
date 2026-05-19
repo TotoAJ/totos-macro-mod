@@ -35,10 +35,6 @@ public class TimingState {
         }
     }
 
-    public void setState(State s) {
-        state = s;
-    }
-
     public void tick() {
         tickTimer++;
     }
@@ -55,7 +51,15 @@ public class TimingState {
         return state;
     }
 
-    public boolean equals(State other) {
-        return state == other;
+    public boolean equals(Object o) {
+        if (o instanceof TimingState) {
+            TimingState other = (TimingState) o;
+
+            if (tickTimer == other.tickTimer && state == other.state) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

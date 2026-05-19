@@ -10,6 +10,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import totoaj.totosmacromod.TotosMacroMod;
 import totoaj.totosmacromod.event.TimingState.State;
@@ -23,12 +24,14 @@ public class KeyInputHandler {
     private static final String KEY_PEARL_LAUNCH = "key." + TotosMacroMod.MOD_ID + ".pearl_launch";
     private static final String KEY_DENSITY_MACE = "key." + TotosMacroMod.MOD_ID + ".density_mace";
     private static final String KEY_BREACH_MACE = "key." + TotosMacroMod.MOD_ID + ".breach_mace";
+    private static final String KEY_AXE = "key." + TotosMacroMod.MOD_ID + "axe";
 
     private static KeyMapping maceToggleKey;
     private static KeyMapping launchToggleKey;
     private static KeyMapping pearlLaunchKey;
     private static KeyMapping breachMaceKey;
     private static KeyMapping densityMaceKey;
+    private static KeyMapping axeKey;
 
     private static TimingState maceState = new TimingState();
     private static TimingState launchState = new TimingState();
@@ -36,8 +39,8 @@ public class KeyInputHandler {
     private static ItemStack pearlReference = new ItemStack(Items.ENDER_PEARL);
     private static ItemStack chargeReference = new ItemStack(Items.WIND_CHARGE);
 
-    private static boolean autoMace = true;
-    private static boolean autoLaunch = true;
+    private static boolean autoMace = false;
+    private static boolean autoLaunch = false;
 
     private static int previousSlot;
 
@@ -45,9 +48,7 @@ public class KeyInputHandler {
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
             if (client.player == null)
                 return;
-
-            if (client.player.swingingArm == null)
-                client.player.swingingArm = client.player.getUsedItemHand();
+            Entity entity = client.crosshairPickEntity;
 
             KeyMapping attackKey = client.options.keyAttack;
 
@@ -58,26 +59,37 @@ public class KeyInputHandler {
             }
 
             if (autoMace) {
-                if (attackKey.isDown() && maceState.equals(State.IDLE)) {
-                    if (client.crosshairPickEntity != null) {
+                if (attackKey.isDown() && maceState.getState() == State.IDLE) {
+                    if (entity != null) {
 
                         previousSlot = client.player.getInventory().getSelectedSlot();
 
                         Component breachKey = breachMaceKey.getTranslatedKeyMessage();
                         Component densityKey = densityMaceKey.getTranslatedKeyMessage();
+                        Component axeSlotKey = axeKey.getTranslatedKeyMessage();
 
                         int breachSlot = Integer.parseInt(breachKey.getString()) - 1;
                         int densitySlot = Integer.parseInt(densityKey.getString()) - 1;
+                        int axeSlot = Integer.parseInt(axeSlotKey.getString()) - 1;
+
+                        if (entity.getPickResult().getItemName()
+                                .equals(Component.literal("Shield"))) {
+                            client.player.displayClientMessage(Component.literal("Detected shield"), false);
+                            client.player.getInventory().setSelectedSlot(axeSlot);
+                            client.gameMode.attack(client.player, entity);
+                        }
 
                         if (client.player.fallDistance < 6.5) {
                             if (breachSlot >= 0 && breachSlot <= 8) {
                                 client.player.getInventory().setSelectedSlot(breachSlot);
+                                client.gameMode.attack(client.player, entity);
                                 maceState.next();
                                 maceState.resetTimer();
                             }
                         } else {
                             if (densitySlot >= 0 && densitySlot <= 8) {
                                 client.player.getInventory().setSelectedSlot(densitySlot);
+                                client.gameMode.attack(client.player, entity);
                                 maceState.next();
                                 maceState.resetTimer();
                             }
@@ -85,7 +97,7 @@ public class KeyInputHandler {
                     }
                 }
 
-                if (attackKey.isDown() && maceState.equals(State.USING)) {
+                if (attackKey.isDown() && maceState.getState() == State.USING) {
                     if (maceState.getTime() >= 1) {
                         client.player.getInventory().setSelectedSlot(previousSlot);
                         maceState.next();
@@ -93,7 +105,7 @@ public class KeyInputHandler {
                     maceState.tick();
                 }
 
-                if (!attackKey.isDown() && maceState.equals(State.RESET)) {
+                if (!attackKey.isDown() && maceState.getState() == State.RESET) {
                     maceState.next();
                 }
             }
@@ -104,7 +116,7 @@ public class KeyInputHandler {
                         Component.literal("Auto Pearl Launch: " + autoLaunch), true);
             }
 
-            if (autoLaunch && pearlLaunchKey.isDown() && launchState.equals(State.IDLE)) {
+            if (autoLaunch && pearlLaunchKey.isDown() && launchState.getState() == State.IDLE) {
                 int pearlSlot = client.player.getInventory().findSlotMatchingItem(pearlReference);
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
 
@@ -115,20 +127,20 @@ public class KeyInputHandler {
 
                     client.player.getInventory().setSelectedSlot(pearlSlot);
 
-                    client.gameMode.useItem(client.player, client.player.swingingArm);
+                    client.gameMode.useItem(client.player, client.player.getUsedItemHand());
 
                     launchState.next();
                 }
-            } else if (pearlLaunchKey.isDown() && launchState.equals(State.USING)) {
+            } else if (pearlLaunchKey.isDown() && launchState.getState() == State.USING) {
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
 
                 client.player.getInventory().setSelectedSlot(windChargeSlot);
 
-                client.gameMode.useItem(client.player, client.player.swingingArm);
+                client.gameMode.useItem(client.player, client.player.getUsedItemHand());
 
                 launchState.next();
                 launchState.resetTimer();
-            } else if (!pearlLaunchKey.isDown() && launchState.equals(State.RESET)) {
+            } else if (!pearlLaunchKey.isDown() && launchState.getState() == State.RESET) {
                 if (launchState.getTime() >= 5) {
                     client.player.getInventory().setSelectedSlot(previousSlot);
 
@@ -162,13 +174,19 @@ public class KeyInputHandler {
         densityMaceKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 KEY_DENSITY_MACE,
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_3,
+                GLFW.GLFW_KEY_8,
                 MACRO_CATEGORY));
 
         breachMaceKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 KEY_BREACH_MACE,
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_4,
+                GLFW.GLFW_KEY_9,
+                MACRO_CATEGORY));
+
+        axeKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                KEY_AXE,
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_7,
                 MACRO_CATEGORY));
     }
 }
