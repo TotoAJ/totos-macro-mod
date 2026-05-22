@@ -59,52 +59,49 @@ public class KeyInputHandler {
                         Component.literal("Auto Mace: " + autoMace), true);
             }
 
-            if (autoMace) {
-                if (entity != null && attackKey.isDown() && maceState.getState() == State.IDLE) {
-                    previousSlot = client.player.getInventory().getSelectedSlot();
+            if (autoMace && entity != null && attackKey.isDown() && maceState.getState() == State.IDLE) {
+                previousSlot = client.player.getInventory().getSelectedSlot();
 
-                    Component breachKey = breachMaceKey.getTranslatedKeyMessage();
-                    Component densityKey = densityMaceKey.getTranslatedKeyMessage();
-                    Component axeSlotKey = axeKey.getTranslatedKeyMessage();
+                Component breachKey = breachMaceKey.getTranslatedKeyMessage();
+                Component densityKey = densityMaceKey.getTranslatedKeyMessage();
+                Component axeSlotKey = axeKey.getTranslatedKeyMessage();
 
-                    int breachSlot = Integer.parseInt(breachKey.getString()) - 1;
-                    int densitySlot = Integer.parseInt(densityKey.getString()) - 1;
-                    int axeSlot = Integer.parseInt(axeSlotKey.getString()) - 1;
+                int breachSlot = Integer.parseInt(breachKey.getString()) - 1;
+                int densitySlot = Integer.parseInt(densityKey.getString()) - 1;
+                int axeSlot = Integer.parseInt(axeSlotKey.getString()) - 1;
 
-                    if (entity.getPickResult().getItemName()
-                            .equals(Component.literal("Shield"))) {
-                        client.player.getInventory().setSelectedSlot(axeSlot);
-                        client.gameMode.attack(client.player, entity);
-                    }
-
-                    if (client.player.fallDistance < 6.5) {
-                        if (breachSlot >= 0 && breachSlot <= 8) {
-                            client.player.getInventory().setSelectedSlot(breachSlot);
-                            client.gameMode.attack(client.player, entity);
-                            maceState.next();
-                            maceState.resetTimer();
-                        }
-                    } else {
-                        if (densitySlot >= 0 && densitySlot <= 8) {
-                            client.player.getInventory().setSelectedSlot(densitySlot);
-                            client.gameMode.attack(client.player, entity);
-                            maceState.next();
-                            maceState.resetTimer();
-                        }
-                    }
+                if (entity.getPickResult().getItemName()
+                        .equals(Component.literal("Shield"))) {
+                    client.player.getInventory().setSelectedSlot(axeSlot);
+                    client.gameMode.attack(client.player, entity);
                 }
 
-                if (attackKey.isDown() && maceState.getState() == State.USING) {
-                    if (maceState.getTime() >= 1) {
-                        client.player.getInventory().setSelectedSlot(previousSlot);
+                if (client.player.fallDistance < 6.5) {
+                    if (breachSlot >= 0 && breachSlot <= 8) {
+                        client.player.getInventory().setSelectedSlot(breachSlot);
+                        client.gameMode.attack(client.player, entity);
                         maceState.next();
                     }
-                    maceState.tick();
+                } else {
+                    if (densitySlot >= 0 && densitySlot <= 8) {
+                        client.player.getInventory().setSelectedSlot(densitySlot);
+                        client.gameMode.attack(client.player, entity);
+                        maceState.next();
+                    }
                 }
+            }
 
-                if (!attackKey.isDown() && maceState.getState() == State.RESET) {
+            if (maceState.getState() == State.USING) {
+                if (maceState.getTime() >= 1) {
+                    client.player.getInventory().setSelectedSlot(previousSlot);
                     maceState.next();
+                    maceState.resetTimer();
                 }
+                maceState.tick();
+            }
+
+            if (!attackKey.isDown() && maceState.getState() == State.RESET) {
+                maceState.next();
             }
 
             if (launchToggleKey.consumeClick()) {
@@ -128,9 +125,10 @@ public class KeyInputHandler {
 
                     client.gameMode.useItem(client.player, client.player.getUsedItemHand());
 
+                    System.out.println("");
                     launchState.next();
                 }
-            } else if (pearlLaunchKey.isDown() && launchState.getState() == State.USING) {
+            } else if (launchState.getState() == State.USING) {
                 int windChargeSlot = client.player.getInventory().findSlotMatchingItem(chargeReference);
 
                 client.player.getInventory().setSelectedSlot(windChargeSlot);
@@ -139,13 +137,13 @@ public class KeyInputHandler {
 
                 client.player.forceSetRotation(0.0f, true, previousAngle, false);
 
+                client.player.getInventory().setSelectedSlot(previousSlot);
+
                 launchState.next();
-                launchState.resetTimer();
             } else if (!pearlLaunchKey.isDown() && launchState.getState() == State.RESET) {
                 if (launchState.getTime() >= 5) {
-                    client.player.getInventory().setSelectedSlot(previousSlot);
-
                     launchState.next();
+                    launchState.resetTimer();
                 }
 
                 launchState.tick();
