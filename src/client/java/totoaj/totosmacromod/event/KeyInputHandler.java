@@ -73,7 +73,6 @@ public class KeyInputHandler {
 
                     if (entity.getPickResult().getItemName()
                             .equals(Component.literal("Shield"))) {
-                        client.player.displayClientMessage(Component.literal("Detected shield"), false);
                         client.player.getInventory().setSelectedSlot(axeSlot);
                         client.gameMode.attack(client.player, entity);
                     }
