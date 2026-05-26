@@ -125,7 +125,6 @@ public class KeyInputHandler {
 
                     client.gameMode.useItem(client.player, client.player.getUsedItemHand());
 
-                    System.out.println("");
                     launchState.next();
                 }
             } else if (launchState.getState() == State.USING) {
