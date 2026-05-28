@@ -70,7 +70,7 @@ public class KeyInputHandler {
                 int densitySlot = Integer.parseInt(densityKey.getString()) - 1;
                 int axeSlot = Integer.parseInt(axeSlotKey.getString()) - 1;
 
-                if (entity.getPickResult().getItemName()
+                if (entity.getPickResult() != null && entity.getPickResult().getItemName()
                         .equals(Component.literal("Shield"))) {
                     client.player.getInventory().setSelectedSlot(axeSlot);
                     client.gameMode.attack(client.player, entity);
