@@ -1,15 +1,14 @@
 {
 	"schemaVersion": 1,
 	"id": "totos-macro-mod",
-	"version": "${version}",
+	"version": "1.0.3",
 	"name": "Toto's Macro Mod",
 	"description": "This is a Mace PVP Macro mod because I can't be asked to switch keys really fast.",
 	"authors": [
 		"TotoAJ"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/TotoAJ/totos-macro-mod"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/totos-macro-mod/icon.png",
@@ -31,8 +30,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.18.4",
-		"fabric-key-binding-api-v1": "*",
-		"minecraft": "~1.21.10",
+		"minecraft": "26.2",
 		"java": ">=21",
 		"fabric-api": "*"
 	}
