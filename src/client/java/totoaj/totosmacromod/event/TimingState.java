@@ -51,6 +51,11 @@ public class TimingState {
         return state;
     }
 
+    public void advance() {
+        next();
+        resetTimer();
+    }
+
     public boolean equals(TimingState other) {
         return tickTimer == other.tickTimer && state == other.state;
     }
