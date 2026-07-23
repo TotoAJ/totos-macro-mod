@@ -1,6 +1,5 @@
 package totoaj.totosmacromod.event;
 
-import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -12,6 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,9 +43,6 @@ public class KeyInputHandler {
     private static final TimingState maceMacroState = new TimingState();
     private static final TimingState launchMacroState = new TimingState();
 
-    private static final ItemStack PEARL = new ItemStack(Items.ENDER_PEARL);
-    private static final ItemStack WIND_CHARGE = new ItemStack(Items.WIND_CHARGE);
-
     private static boolean maceEnabled = false;
     private static boolean launchEnabled = false;
 
@@ -54,8 +52,7 @@ public class KeyInputHandler {
 
     public static void registerKeyInputs() {
         ClientTickEvents.START_CLIENT_TICK.register(client -> {
-            if (client.player == null)
-                return;
+            if (client.player == null) return;
 
             handleMace(client);
             handleLaunch(client);
@@ -122,8 +119,8 @@ public class KeyInputHandler {
         switch (launchMacroState.getState()) {
             case State.IDLE:
                 if (launchEnabled && pearlLaunchKey.isDown()) {
-                    int pearlSlot = playerInv.findSlotMatchingItem(PEARL);
-                    cachedWindChargeSlot = playerInv.findSlotMatchingItem(WIND_CHARGE);
+                    int pearlSlot = findHotbarSlot(playerInv, Items.ENDER_PEARL);
+                    cachedWindChargeSlot = findHotbarSlot(playerInv, Items.WIND_CHARGE);
 
                     previousSlot = playerInv.getSelectedSlot();
 
@@ -186,6 +183,18 @@ public class KeyInputHandler {
 
     private static int getConfiguredSlot(KeyMapping key) {
         return Integer.parseInt(key.getTranslatedKeyMessage().getString()) - 1;
+    }
+
+    private static int findHotbarSlot(Inventory inventory, Item item) {
+        int slot = -1;
+
+        for (int i = 0; i < 9; i++) {
+            if (inventory.getItem(i).is(item)) {
+                slot = i;
+            }
+        }
+
+        return slot;
     }
 
     public static void register() {

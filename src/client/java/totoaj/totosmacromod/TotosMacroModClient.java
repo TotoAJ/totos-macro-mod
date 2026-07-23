@@ -1,6 +1,6 @@
 package totoaj.totosmacromod;
 
-import totoaj.totosmacromod.event.*;
+import totoaj.totosmacromod.event.KeyInputHandler;
 
 import net.fabricmc.api.ClientModInitializer;
 
