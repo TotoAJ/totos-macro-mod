@@ -67,7 +67,8 @@ public class KeyInputHandler {
         assert player != null;
         Inventory playerInv = player.getInventory();
         MultiPlayerGameMode gameMode = client.gameMode;
-        assert gameMode != null;
+
+        if (gameMode == null) return;
 
         switch (maceMacroState.getState()) {
             case State.IDLE:
@@ -114,7 +115,8 @@ public class KeyInputHandler {
         assert player != null;
         Inventory playerInv = player.getInventory();
         MultiPlayerGameMode gameMode = client.gameMode;
-        assert gameMode != null;
+
+        if (gameMode == null) return;
 
         switch (launchMacroState.getState()) {
             case State.IDLE:
