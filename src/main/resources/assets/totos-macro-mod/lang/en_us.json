@@ -1,9 +1,11 @@
 {
-    "key.category.totos-macro-mod.macros": "Macros",
-    "key.totos-macro-mod.toggle_mace": "Toggle Auto Mace",
-    "key.totos-macro-mod.toggle_launch": "Toggle Auto Launch",
-    "key.totos-macro-mod.pearl_launch": "Pearl Launch",
-    "key.totos-macro-mod.breach_mace": "Breach Mace Slot",
-    "key.totos-macro-mod.density_mace": "Density Mace Slot",
-    "key.totos-macro-mod.axe": "Axe Slot"
+  "key.category.totos-macro-mod.macros": "Macros",
+  "key.totos-macro-mod.toggle_mace": "Toggle Auto Mace",
+  "key.totos-macro-mod.toggle_pearl": "Toggle Pearl Launch",
+  "key.totos-macro-mod.toggle_spear": "Toggle Spear Launch",
+  "key.totos-macro-mod.pearl_launch": "Pearl Launch",
+  "key.totos-macro-mod.spear_launch": "Spear Launch",
+  "key.totos-macro-mod.breach_mace": "Breach Mace Slot",
+  "key.totos-macro-mod.density_mace": "Density Mace Slot",
+  "key.totos-macro-mod.axe": "Axe Slot"
 }

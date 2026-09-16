@@ -1,37 +1,37 @@
 {
-	"schemaVersion": 1,
-	"id": "totos-macro-mod",
-	"version": "1.0.3",
-	"name": "Toto's Macro Mod",
-	"description": "This is a Mace PVP Macro mod because I can't be asked to switch keys really fast.",
-	"authors": [
-		"TotoAJ"
-	],
-	"contact": {
-		"sources": "https://github.com/TotoAJ/totos-macro-mod"
-	},
-	"license": "CC0-1.0",
-	"icon": "assets/totos-macro-mod/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"totoaj.totosmacromod.TotosMacroMod"
-		],
-		"client": [
-			"totoaj.totosmacromod.TotosMacroModClient"
-		]
-	},
-	"mixins": [
-		"totos-macro-mod.mixins.json",
-		{
-			"config": "totos-macro-mod.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.18.4",
-		"minecraft": ">=26.1",
-		"java": ">=21",
-		"fabric-api": "*"
-	}
+  "schemaVersion": 1,
+  "id": "totos-macro-mod",
+  "version": "1.0.4",
+  "name": "Toto's Macro Mod",
+  "description": "This is a Mace PVP Macro mod because I can't be asked to switch keys really fast.",
+  "authors": [
+    "TotoAJ"
+  ],
+  "contact": {
+    "sources": "https://github.com/TotoAJ/totos-macro-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/totos-macro-mod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "totoaj.totosmacromod.TotosMacroMod"
+    ],
+    "client": [
+      "totoaj.totosmacromod.TotosMacroModClient"
+    ]
+  },
+  "mixins": [
+    "totos-macro-mod.mixins.json",
+    {
+      "config": "totos-macro-mod.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": ">=26.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
 }

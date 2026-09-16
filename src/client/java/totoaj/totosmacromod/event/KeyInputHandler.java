@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -24,6 +25,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import org.lwjgl.glfw.GLFW;
 import totoaj.totosmacromod.TotosMacroMod;
 import totoaj.totosmacromod.event.TimingState.State;
+import totoaj.totosmacromod.mixin.client.MinecraftClientAccessor;
 
 import java.util.Objects;
 
@@ -31,26 +33,30 @@ public class KeyInputHandler {
     private static final KeyMapping.Category MACRO_CATEGORY = KeyMapping.Category
             .register(Identifier.fromNamespaceAndPath(TotosMacroMod.MOD_ID, "macros"));
     private static final String KEY_TOGGLE_MACE = "key." + TotosMacroMod.MOD_ID + ".toggle_mace";
-    private static final String KEY_TOGGLE_LAUNCH = "key." + TotosMacroMod.MOD_ID + ".toggle_launch";
+    private static final String KEY_TOGGLE_PEARL = "key." + TotosMacroMod.MOD_ID + ".toggle_pearl";
+    private static final String KEY_TOGGLE_SPEAR = "key." + TotosMacroMod.MOD_ID + ".toggle_spear";
     private static final String KEY_PEARL_LAUNCH = "key." + TotosMacroMod.MOD_ID + ".pearl_launch";
+    private static final String KEY_SPEAR_LAUNCH = "key." + TotosMacroMod.MOD_ID + ".spear_launch";
 
     private static final float DENSITY_THRESHOLD = 6.5F;
 
     private static KeyMapping maceToggleKey;
-    private static KeyMapping launchToggleKey;
+    private static KeyMapping pearlToggleKey;
+    private static KeyMapping spearToggleKey;
     private static KeyMapping pearlLaunchKey;
+    private static KeyMapping spearLaunchKey;
 
     private static final TimingState maceMacroState = new TimingState();
-    private static final TimingState launchMacroState = new TimingState();
+    private static final TimingState pearlMacroState = new TimingState();
+    private static final TimingState spearMacroState = new TimingState();
 
     private static boolean maceEnabled = false;
-    private static boolean launchEnabled = false;
+    private static boolean pearlEnabled = false;
+    private static boolean spearEnabled = false;
 
     private static int previousSlot;
     private static int cachedWindChargeSlot;
-    private static int cachedDensityMaceSlot = -1;
-    private static int cachedBreachMaceSlot = -1;
-    private static int cachedAxeSlot = -1;
+    private static int cachedSpearSlot;
     private static float previousPitch;
 
     public static void registerKeyInputs() {
@@ -58,7 +64,8 @@ public class KeyInputHandler {
             if (client.player == null) return;
 
             handleMace(client);
-            handleLaunch(client);
+            handlePearl(client);
+            handleSpear(client);
             toggleMacros(client);
         });
     }
@@ -78,26 +85,21 @@ public class KeyInputHandler {
                 if (maceEnabled && entity instanceof LivingEntity && attackKey.isDown()) {
                     previousSlot = playerInv.getSelectedSlot();
 
-                    if (!isSlot(cachedBreachMaceSlot) || !Objects.requireNonNull(playerInv.getSlot(cachedBreachMaceSlot)).get().is(Items.MACE)) {
-                        cachedBreachMaceSlot = findSlotMatchingEnchantment(client, Enchantments.BREACH);
-                    }
-                    if (!isSlot(cachedDensityMaceSlot) || !Objects.requireNonNull(playerInv.getSlot(cachedDensityMaceSlot)).get().is(Items.MACE)) {
-                        cachedDensityMaceSlot = findSlotMatchingEnchantment(client, Enchantments.DENSITY);
-                    }
-                    if (!isSlot(cachedAxeSlot) || !Objects.requireNonNull(playerInv.getSlot(cachedAxeSlot)).get().is(Items.NETHERITE_AXE)) {
-                        cachedAxeSlot = findHotbarSlot(playerInv, Items.NETHERITE_AXE);
-                        if (cachedAxeSlot == -1) {
-                            cachedAxeSlot = findHotbarSlot(playerInv, Items.DIAMOND_AXE);
-                        }
-                    }
+                    int breachMaceSlot = findSlotMatchingEnchantment(client, Enchantments.BREACH);
+                    int densityMaceSlot = findSlotMatchingEnchantment(client, Enchantments.DENSITY);
+                    int axeSlot = findHotbarSlot(playerInv, "axe");
 
                     ItemStack entityItem = entity.getWeaponItem();
-                    if (!entityItem.isEmpty() && entityItem.is(Items.SHIELD) && cachedAxeSlot != -1) {
-                        playerInv.setSelectedSlot(cachedAxeSlot);
+                    if (!entityItem.isEmpty() && entityItem.is(Items.SHIELD) && axeSlot != -1) {
+                        playerInv.setSelectedSlot(axeSlot);
                         gameMode.attack(player, entity);
                     }
 
-                    int optimalMace = player.fallDistance < DENSITY_THRESHOLD ? cachedBreachMaceSlot : cachedDensityMaceSlot;
+                    int optimalMace = player.fallDistance < DENSITY_THRESHOLD ? breachMaceSlot : densityMaceSlot;
+
+                    if (breachMaceSlot + densityMaceSlot == -2) {
+                        optimalMace = findHotbarSlot(playerInv, Items.MACE);
+                    }
 
                     if (isSlot(optimalMace) && optimalMace != -1) {
                         playerInv.setSelectedSlot(optimalMace);
@@ -122,7 +124,7 @@ public class KeyInputHandler {
         }
     }
 
-    private static void handleLaunch(Minecraft client) {
+    private static void handlePearl(Minecraft client) {
         LocalPlayer player = client.player;
         assert player != null;
         Inventory playerInv = player.getInventory();
@@ -130,9 +132,9 @@ public class KeyInputHandler {
 
         if (gameMode == null) return;
 
-        switch (launchMacroState.getState()) {
+        switch (pearlMacroState.getState()) {
             case State.IDLE:
-                if (launchEnabled && pearlLaunchKey.isDown()) {
+                if (pearlEnabled && pearlLaunchKey.isDown()) {
                     int pearlSlot = findHotbarSlot(playerInv, Items.ENDER_PEARL);
                     cachedWindChargeSlot = findHotbarSlot(playerInv, Items.WIND_CHARGE);
 
@@ -153,7 +155,7 @@ public class KeyInputHandler {
 
                         gameMode.useItem(player, player.getUsedItemHand());
 
-                        launchMacroState.next();
+                        pearlMacroState.next();
                     }
                 }
                 break;
@@ -167,17 +169,77 @@ public class KeyInputHandler {
 
                 playerInv.setSelectedSlot(previousSlot);
 
-                launchMacroState.next();
+                pearlMacroState.next();
                 break;
 
             case State.RESET:
                 if (!pearlLaunchKey.isDown()) {
-                    if (launchMacroState.getTime() >= 5) {
-                        launchMacroState.advance();
+                    if (pearlMacroState.getTime() >= 5) {
+                        pearlMacroState.advance();
                     }
 
-                    launchMacroState.tick();
+                    pearlMacroState.tick();
                 }
+                break;
+        }
+    }
+
+    private static void handleSpear(Minecraft client) {
+        LocalPlayer player = client.player;
+        assert player != null;
+        Inventory playerInv = player.getInventory();
+        MultiPlayerGameMode gameMode = client.gameMode;
+
+        if (gameMode == null) return;
+
+        switch (spearMacroState.getState()) {
+            case IDLE:
+                if (spearEnabled && spearLaunchKey.isDown()) {
+                    cachedWindChargeSlot = findHotbarSlot(playerInv, Items.WIND_CHARGE);
+                    cachedSpearSlot = findHotbarSlot(playerInv, Items.NETHERITE_SPEAR);
+
+                    if (cachedWindChargeSlot < 0) return;
+                    if (cachedSpearSlot < 0) {
+                        cachedSpearSlot = findHotbarSlot(playerInv, Items.DIAMOND_SPEAR);
+                        if (cachedSpearSlot < 0) return;
+                    }
+
+                    previousSlot = playerInv.getSelectedSlot();
+
+                    if (isSlot(cachedWindChargeSlot) && isSlot(cachedSpearSlot)) {
+                        playerInv.setSelectedSlot(cachedWindChargeSlot);
+
+                        previousPitch = player.getXRot();
+
+                        player.forceSetRotation(0.0f, true, 90.0f, false);
+
+                        player.jumpFromGround();
+
+                        gameMode.useItem(player, player.getUsedItemHand());
+
+                        spearMacroState.next();
+                    }
+                }
+                break;
+
+            case USING:
+                player.forceSetRotation(0.0f, true, previousPitch, false);
+
+                spearMacroState.advance();
+                break;
+
+            case RESET:
+                if (spearMacroState.getTime() >= 8) {
+                    playerInv.setSelectedSlot(cachedSpearSlot);
+
+                    ((MinecraftClientAccessor) client).callStartAttack();
+
+                    playerInv.setSelectedSlot(previousSlot);
+
+                    spearMacroState.advance();
+                }
+
+                spearMacroState.tick();
                 break;
         }
     }
@@ -191,9 +253,14 @@ public class KeyInputHandler {
             player.sendOverlayMessage(Component.literal("Auto Mace: " + maceEnabled));
         }
 
-        if (launchToggleKey.consumeClick()) {
-            launchEnabled = !launchEnabled;
-            player.sendOverlayMessage(Component.literal("Auto Pearl Launch: " + launchEnabled));
+        if (pearlToggleKey.consumeClick()) {
+            pearlEnabled = !pearlEnabled;
+            player.sendOverlayMessage(Component.literal("Auto Pearl Launch: " + pearlEnabled));
+        }
+
+        if (spearToggleKey.consumeClick()) {
+            spearEnabled = !spearEnabled;
+            player.sendOverlayMessage(Component.literal("Auto Spear Launch: " + spearEnabled));
         }
     }
 
@@ -202,15 +269,27 @@ public class KeyInputHandler {
     }
 
     private static int findHotbarSlot(Inventory inventory, Item item) {
-        int slot = -1;
-
         for (int i = 0; i < 9; i++) {
             if (inventory.getItem(i).is(item)) {
-                slot = i;
+                return i;
             }
         }
 
-        return slot;
+        return -1;
+    }
+
+    private static int findHotbarSlot(Inventory inventory, String item) {
+        for (int i = 0; i < 9; i++) {
+            if (isItem(inventory.getItem(i), item)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static boolean isItem(ItemStack item, String type) {
+        return BuiltInRegistries.ITEM.getKey(item.getItem()).toString().toLowerCase().contains(type);
     }
 
     private static int findSlotMatchingEnchantment(Minecraft client, ResourceKey<Enchantment> enchant) {
@@ -237,9 +316,13 @@ public class KeyInputHandler {
     public static void register() {
         maceToggleKey = registerKey(KEY_TOGGLE_MACE, GLFW.GLFW_KEY_BACKSLASH);
 
-        launchToggleKey = registerKey(KEY_TOGGLE_LAUNCH, GLFW.GLFW_KEY_RIGHT_BRACKET);
+        pearlToggleKey = registerKey(KEY_TOGGLE_PEARL, GLFW.GLFW_KEY_RIGHT_BRACKET);
+
+        spearToggleKey = registerKey(KEY_TOGGLE_SPEAR, GLFW.GLFW_KEY_LEFT_BRACKET);
 
         pearlLaunchKey = registerKey(KEY_PEARL_LAUNCH, GLFW.GLFW_KEY_R);
+
+        spearLaunchKey = registerKey(KEY_SPEAR_LAUNCH, GLFW.GLFW_KEY_5);
     }
 
     private static KeyMapping registerKey(String name, int keybind) {
